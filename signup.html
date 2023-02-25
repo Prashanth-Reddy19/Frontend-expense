@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        form {
+            text-align: center;
+        }
+
+        body {
+            background-color: aquamarine;
+        }
+
+        label {
+            font-size: large;
+        }
+
+        input {
+            font-size: medium;
+        }
+
+        button {
+            font-size: large;
+            color: brown;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form onsubmit="signup(event)">
+        <h1>Sign up form</h1><br>
+        <div>
+            <label>Enter Name</label>
+            <input type="text" name="name" required placeholder="Enter name">
+        </div><br>
+        <div>
+            <label>Enter Email</label>
+            <input type="text" name="email" required placeholder="Enter email">
+        </div><br>
+        <div>
+            <label>Enter Password</label>
+            <input type="password" name="password" required placeholder="Enter password">
+        </div><br>
+        <div>
+            <button>signup</button>
+        </div><br>
+
+        <div><a href="login.html">Existing User - Login</a></div>
+
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.3/axios.min.js"></script>
+    <script>
+        async function signup(e) {
+            try {
+                e.preventDefault();
+
+                const signupDetails = {
+                    name: e.target.name.value,
+                    email: e.target.email.value,
+                    password: e.target.password.value
+                }
+                console.log(signupDetails)
+                const response = await axios.post('http://localhost:3000/user/signup', signupDetails)
+                if (response.status === 201) {
+                    window.location.href = "login.html"
+                } else {
+                    throw new Error('Failed to login')
+                }
+
+            } catch (err) {
+                document.body.innerHTML += `<div style="color:red">${err}</div>`
+            }
+        }
+    </script>
+
+</body>
+
+</html>

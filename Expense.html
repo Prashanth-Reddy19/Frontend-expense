@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+
+      text-align: center;
+
+    }
+
+    label {
+      font-size: 20px;
+
+    }
+
+    h1 {
+      color: brown;
+    }
+
+    button {
+      width: 250px;
+      color: black;
+      background-color: orange;
+      font-size: large;
+    }
+
+    input {
+      width: 250px;
+      padding: 3px;
+    }
+
+    li {
+      font-size: large;
+      color: darkblue;
+      text-align: center;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1>Expense Tracker</h1>
+  <form onsubmit="saveToLocalStorage(event)">
+    <label>Choose Expense amount</label><br>
+    <input id="expense" type="number" name="expense" required><br>
+    <label>Choose Description</label><br>
+    <input id="description" type="text" name="description" required><br>
+    <label for="category">Choose category</label><br>
+    <select name="category" id="category" style="width: 250px;"><br>
+      <option value="select">select</option>
+      <option value="Food">Food</option>
+      <option value="Games">Games</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Movies">Movies</option>
+    </select><br><br>
+    <button>Add Expense</button><br><br>
+  </form>
+  <button id="premium">Buy Premium</button>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <ol id="listOfUsers"></ol>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    function saveToLocalStorage(event) {
+      event.preventDefault();
+      const expense = event.target.expense.value;
+      const description = event.target.description.value;
+      const category = event.target.category.value;
+
+      const expenseDetails = {
+        expense,
+        description,
+        category
+      }
+      console.log(expenseDetails)
+
+
+      const token = localStorage.getItem('token')
+
+      axios.post("http://localhost:3000/expense/add-expense", expenseDetails,{ headers: { "Authorization": token } })
+        .then((response) => {
+          //console.log(response, '****Post Request*****')
+          showUser(response.data.newExpense);
+
+        })
+        .catch((err) => {
+          document.body.innerHTML = document.body.innerHTML + "<h4>Something went wrong</h4>"
+          console.log(err)
+        })
+
+
+    }
+    window.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem('token')
+      axios.get("http://localhost:3000/expense/get-expenses", { headers: { "Authorization": token } })
+
+        .then((response) => {
+          console.log(response, "*****Get Request*****")
+          for (var i = 0; i < response.data.expenses.length; i++) {
+            showUser(response.data.expenses[i])
+
+          }
+        })
+        .catch((error) => {
+          document.body.innerHTML = document.body.innerHTML + "<h4>Something went wrong</h4>"
+          console.log(error)
+
+        })
+
+    })
+
+    function showUser(user) {
+      document.getElementById('expense').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('category').value = '';
+
+
+      const parentNode = document.getElementById('listOfUsers');
+      const childHTML = `<li id=${user.id}> ${user.expense} - ${user.description} - ${user.category}
+              <button onclick=deleteUser('${user.id}')> Delete User </button>
+              </li>`
+
+      parentNode.innerHTML = parentNode.innerHTML + childHTML;
+    }
+
+    function deleteUser(userId) {
+const token=localStorage.getItem('token')
+      axios.delete(`http://localhost:3000/expense/delete-expense/${userId}`,{ headers: { "Authorization": token } })
+        .then((response => {
+          removeUserFromScreen(userId)
+        }))
+        .catch((error) => {
+          console.log(error)
+        })
+
+      console.log('*****', ('Deleted user Id'), (userId), '*****')
+      removeUserFromScreen(userId);
+
+    }
+
+    function removeUserFromScreen(userId) {
+      const parentNode = document.getElementById('listOfUsers');
+      const childNodeToBeDeleted = document.getElementById(userId);
+      if (childNodeToBeDeleted) {
+
+        parentNode.removeChild(childNodeToBeDeleted)
+      }
+    }
+      const premium=document.querySelector('#premium');
+
+      premium.addEventListener('click',premiumuser);
+   
+      async function premiumuser(e){
+       try{
+           const token=localStorage.getItem('token');
+           console.log(token);
+           const response =await axios.get(`http://localhost:3000/purchase/premiummembership`,{headers:{'Authorization':token}});
+           console.log(response);
+           var options={
+               "key":response.data.key_id,
+               "order_id":response.data.order.id,
+               "handler":async function(response){
+                   await axios.post('http://localhost:3000/purchase/updatetransactionstatus',{
+                   order_id:options.order_id,
+                   payment_id:response.razor_payment_id},
+                   {headers:{"Authorization":token}})
+   
+                   alert('You Are a Premium User Now')
+   
+               /* document.getElementById('premium').style.visibility="hidden"; */
+   
+   
+               },
+   
+           }
+           const rp1=new Razorpay(options);
+           rp1.open();
+           e.preventDefault();
+   
+           rp1.on('payment.failed',function(response){
+               console.log(response);
+               alert('Something went wrong')
+           })
+   
+       }
+       catch(err){
+           console.log(err);
+           console.log("error at premiumbtn",err);
+       }
+   
+      }
+    
+
+  </script>
+</body>
+
+</html>
