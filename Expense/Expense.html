@@ -61,15 +61,26 @@
     <button>Add Expense</button><br><br>
   </form>
   <div id="premiummessage"></div>
-  <button id="premium">Buy Premium</button>
-  <br>
-  <button onclick="download()" id="downloadexpense">Download File</button>
+  <button id="premium">Buy Premium</button><br><br>
+
+  <button onclick="download()" id="download">Download Expenses</button><br><br>
+  <button onclick="downloadedfiles(event)" id="downloadedfileslist">View Downloaded Expenses</button>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <h1>Expenses</h1>
 
   <ol id="listOfUsers"></ol>
+  <div id="page"></div>
+  <ol id="pages"></ol>
+  <h3>Set Page Limit</h3>
+  <select id="limit">
+    <option></option>
+    <option>5</option>
+    <option>10</option>
+    <option>15</option>
+  </select>
   <ol id="leaderboard"></ol>
+
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 

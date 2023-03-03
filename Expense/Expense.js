@@ -44,7 +44,10 @@ function parseJwt(token) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  const limit = localStorage.getItem('limit');
+  const page = 1;
   const token = localStorage.getItem('token')
+
   const decodeToken = parseJwt(token)
   console.log(decodeToken)
   const ispremiumuser = decodeToken.ispremiumuser
@@ -53,7 +56,7 @@ window.addEventListener("DOMContentLoaded", () => {
     showLeaderBoard()
   }
 
-  axios.get("http://localhost:3000/expense/get-expenses", { headers: { "Authorization": token } })
+  axios.get(`http://localhost:3000/expense/get-expenses?page=${page}&limit=${limit}`, { headers: { "Authorization": token } })
 
     .then((response) => {
       console.log(response, "*****Get Request*****")
@@ -61,6 +64,7 @@ window.addEventListener("DOMContentLoaded", () => {
         showUser(response.data.expenses[i])
 
       }
+      showpages(response.data)
     })
     .catch((error) => {
       document.body.innerHTML = document.body.innerHTML + "<h4>Something went wrong</h4>"
@@ -129,26 +133,45 @@ function removeUserFromScreen(userId) {
   }
 }
 
-function download(){
-  axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
-  .then((response) => {
-      if(response.status === 201){
-          //the bcakend is essentially sending a download link
-          //  which if we open in browser, the file would download
-          var a = document.createElement("a");
-          a.href = response.data.fileUrl;
-          a.download = 'myexpense.csv';
-          a.click();
-      } else {
-          throw new Error(response.data.message)
+function download() {
+  const token = localStorage.getItem('token')
+  axios.get('http://localhost:3000/expense/download', { headers: { "Authorization": token } })
+    .then((response) => {
+
+      if (response.status === 201) {
+        //the backend is essentially sending a download link
+        //  which if we open in browser, the file would download
+        var a = document.createElement("a");
+        a.href = response.data.fileUrl;
+        a.download = 'myexpense.csv';
+        a.click();
       }
 
-  })
-  .catch((err) => {
-      showError(err)
-  });
+    })
+    .catch((err) => {
+      console.log(err)
+    });
 }
 
+async function downloadedfiles(e) {
+
+  try {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`http://localhost:3000/expense/downloadedfiles`, { headers: { 'Authorization': token } });
+
+    const downloadedfileslist = document.getElementById('downloadedfileslist');
+    for (let i = 0; i < response.data.message.length; i++) {
+
+      console.log(response.data.message[i].url);
+      downloadedfileslist.innerHTML += `<li><a href=${response.data.message[i].url}>TextFile${i}</a></li>`
+    }
+
+
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 const premium = document.querySelector('#premium');
 
@@ -176,15 +199,9 @@ async function premiumuser(e) {
         document.getElementById('premiummessage').innerHTML = "You are premium user"
         localStorage.setItem('token', res.data.token)
         showLeaderBoard()
-
-
-
-
-
       },
 
     }
-
 
     const rp1 = new Razorpay(options);
     rp1.open();
@@ -202,3 +219,49 @@ async function premiumuser(e) {
   }
 
 }
+
+const pages = document.getElementById('pages')
+async function showpages({ currentpage, nextpage, previouspage, hasnextpage, haspreviouspage, lastpage }) {
+  try {
+    pages.innerHTML = '';
+
+    if (haspreviouspage) {
+      const btn2 = document.createElement('button');
+      btn2.innerHTML = previouspage;
+      btn2.addEventListener('click', () => getExpenses(previouspage))
+      pages.appendChild(btn2);
+    }
+    const btn1 = document.createElement('button');
+    btn1.innerHTML = `<h3>${currentpage}</h3>`
+    btn1.addEventListener('click', () => getExpenses(currentpage))
+    pages.appendChild(btn1);
+
+    if (hasnextpage) {
+      const btn3 = document.createElement('button')
+      btn3.innerHTML = nextpage;
+      btn3.addEventListener('click', () => getExpenses(nextpage))
+      pages.appendChild(btn3);
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const token = localStorage.getItem('token');
+axios.get(`http://localhost:3000/expense/get-expensespage?page=${page}&limit=${limit}`, { headers: { "Authorization": token } })
+
+.then((response) => {
+  console.log(response, "*****Get Request*****")
+  for (var i = 0; i < response.data.expenses.length; i++) {
+    showUser(response.data.expenses[i])
+
+  }
+  showpages(response.data)
+})
+.catch((error) => {
+  document.body.innerHTML = document.body.innerHTML + "<h4>Something went wrong</h4>"
+  console.log(error)
+
+})
+
