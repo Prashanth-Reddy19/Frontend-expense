@@ -1,0 +1,43 @@
+body {
+   
+    text-align: center;
+
+  }
+
+  label {
+    font-size: 20px;
+
+  }
+
+  h1 {
+    color: brown;
+  }
+
+  button {
+    width: 250px;
+    color: black;
+    background-color: orange;
+    font-size: large;
+ 
+    
+  }
+
+  input {
+    width: 250px;
+    padding: 3px;
+  }
+
+  li {
+    font-size: large;
+    color: darkblue;
+    text-align: center;
+  }
+
+.myform{
+  border: 5px solid black;
+  width: 800px;
+  height: 300px;
+  text-align: center;
+}
+
+  

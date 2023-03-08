@@ -1,0 +1,21 @@
+form {
+    text-align: center;
+}
+
+body {
+    background-color: aquamarine;
+}
+
+label {
+    font-size: large;
+}
+
+input {
+    font-size: medium;
+}
+
+button {
+    font-size: large;
+    color: brown;
+}
+
